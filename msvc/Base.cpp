@@ -30,8 +30,6 @@ void Base::InitHooks(bool pIsServer)
 {
 	Utils::AllocateConsole("T5 Hook");
 	Log_Clear();
-	Logger(lINFO, "InitHooks()", "Starting Call of Duty Black Ops");
-	CPatcher::InstallStringPatch(0xA2843C, "TEST_T5_HOOK", 12);
 }
 
 void CallHook::initialize(const char* pOriginalCode, PBYTE place)
