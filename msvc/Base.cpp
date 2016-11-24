@@ -11,6 +11,8 @@
 #include "Base.h"
 #include "CPatcher.h"
 
+#define CONSOLE_TITLE "dinput8-hook"
+
 Base* Base::gInstance = NULL;
 Base* Base::GetInstance()
 {
@@ -28,7 +30,7 @@ Base::Base()
 
 void Base::InitHooks(bool pIsServer)
 {
-	Utils::AllocateConsole("T5 Hook");
+	Utils::AllocateConsole(CONSOLE_TITLE);
 	Log_Clear();
 }
 
