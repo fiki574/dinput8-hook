@@ -28,7 +28,7 @@ Base::Base()
 	dwEntryPoint = (DWORD)hModule + dwCodeOffset;
 }
 
-void Base::InitHooks(bool pIsServer)
+void Base::InitHooks()
 {
 	Utils::AllocateConsole(CONSOLE_TITLE);
 	Log_Clear();

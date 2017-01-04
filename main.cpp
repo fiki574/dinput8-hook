@@ -3,7 +3,6 @@
 #include "msvc\StdAfx.h"
 
 DIRECTINPUT8CREATEPROC				WrapperSystem::DirectInput8Create;
-
 HMODULE								WrapperSystem::dinputDll;
 WrapperList							WrapperSystem::wrappers;
 HHOOK								WrapperSystem::hookHandleGetMessage = 0;
@@ -32,17 +31,16 @@ extern "C"
 		VirtualProtect((LPVOID)hModule, size, PAGE_EXECUTE_READWRITE, &oldProtect);
 	}
 
-	void InitApb(LPVOID pIsServer)
+	void Init()
 	{
-		Base::GetInstance()->InitHooks((bool)pIsServer);
+		Base::GetInstance()->InitHooks();
 	}
 
 	void Main_DoInit()
 	{
 		HMODULE hModule;
 		if (SUCCEEDED(GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCSTR)Main_DoInit, &hModule))) Main_UnprotectModule(hModule);
-		DWORD sVerAddr = 1;
-		CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)InitApb, (LPVOID)((sVerAddr == 1) ? false : true), NULL, NULL);
+		CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)Init, NULL, NULL, NULL);
 		memcpy(originalEP, &originalCode, sizeof(originalCode));
 		__asm jmp originalEP
 	}

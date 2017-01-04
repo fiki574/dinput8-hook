@@ -3,19 +3,19 @@
 
 void Utils::AllocateConsole(LPCSTR pTitle)
 {
-	AllocConsole() ;
+	AllocConsole();
 	AttachConsole(GetCurrentProcessId());
-	freopen("CON", "w", stdout) ;
+	freopen("CON", "w", stdout);
 	SetConsoleTitleA(pTitle);
 	COORD cordinates = {80, 32766};
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleScreenBufferSize(handle, cordinates);
 }
 
-DWORD Utils::FindPattern( DWORD dwStart, DWORD dwLen, BYTE* pszPatt, char pszMask[] )
+DWORD Utils::FindPattern(DWORD dwStart, DWORD dwLen, BYTE* pszPatt, char pszMask[])
 {
 	unsigned int i = NULL;
-	int iLen = strlen( pszMask ) - 1;
+	int iLen = strlen(pszMask) - 1;
 	for(DWORD dwRet = dwStart; dwRet < dwStart + dwLen; dwRet++)
 	{
 		if(*(BYTE*)dwRet == pszPatt[i] || pszMask[i] == '?')

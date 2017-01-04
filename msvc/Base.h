@@ -11,7 +11,7 @@ public:
 	static Base* GetInstance();
 	static Base* gInstance;
 
-	void InitHooks(bool pIsServer);
+	void InitHooks();
 	DWORD dwCodeSize;
 	DWORD dwCodeOffset;
 	DWORD dwEntryPoint;
