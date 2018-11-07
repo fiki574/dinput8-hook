@@ -37,9 +37,6 @@
     <ClInclude Include="StdAfx.h">
       <Filter>Resource</Filter>
     </ClInclude>
-    <ClInclude Include="CPatcher.h">
-      <Filter>Misc</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Logger.cpp">
@@ -52,9 +49,6 @@
       <Filter>Base</Filter>
     </ClCompile>
     <ClCompile Include="..\main.cpp" />
-    <ClCompile Include="CPatcher.cpp">
-      <Filter>Misc</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="di-wrapper.rc">

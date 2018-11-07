@@ -23,13 +23,12 @@ typedef signed __int64 sint64;
 typedef unsigned int addr;
 typedef unsigned int uint32;
 
-
 class Utils
 {
 public:
-	static DWORD FindPattern( DWORD dwStart, DWORD dwLen, BYTE* pszPatt, char pszMask[] );
-	static DWORD OffsetToCode( HANDLE hHandle );
-	static DWORD GetSizeOfCode( HANDLE hHandle );
+	static DWORD FindPattern(DWORD dwStart, DWORD dwLen, BYTE* pszPatt, char pszMask[]);
+	static DWORD OffsetToCode(HANDLE hHandle);
+	static DWORD GetSizeOfCode(HANDLE hHandle);
 	static void AllocateConsole(LPCSTR pTitle);
 };
 

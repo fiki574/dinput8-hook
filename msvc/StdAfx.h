@@ -1,5 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_DEPRECATE
+#define _WINSOCK2API_
+
 #pragma warning(disable : 4996)
 #pragma warning(disable : 4099)
 #pragma warning(disable : 4800)
@@ -10,8 +12,6 @@
 #pragma warning(disable : 4561)
 #pragma warning(disable : 4700)
 #pragma warning(disable : 4793)
-
-#define _WINSOCK2API_
 
 #include <Windows.h>
 #include <string>

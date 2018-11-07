@@ -19,12 +19,18 @@ void Log_Clear()
 {
 	FILE *file; 
 	file = fopen("hook.log", "w");
-	fprintf(file, "\0");
+    if (file)
+    {
+        fprintf(file, "\0");
+        fclose(file);
+    }
 }
 
 void Logger(unsigned int lvl, char* caller, char* logline, ...)
 {
-	while(isLogging) Sleep(10);
+	while(isLogging) 
+        Sleep(10);
+
 	isLogging = true;
 	FILE *file; 
 	file = fopen("hook.log","a+");
@@ -37,10 +43,14 @@ void Logger(unsigned int lvl, char* caller, char* logline, ...)
 	setColor(LIGHTCYAN);
 	printf("%s: ", caller);
 	fprintf(file, "%s: ", caller);
-	if ( lvl == lINFO ) setColor(WHITE);
-	else if ( lvl == lWARN ) setColor(YELLOW);
-	else if ( lvl == lERROR ) setColor(RED);
-	else if ( lvl == lDEBUG ) setColor(GREEN);
+	if ( lvl == lINFO ) 
+        setColor(WHITE);
+	else if ( lvl == lWARN ) 
+        setColor(YELLOW);
+	else if ( lvl == lERROR ) 
+        setColor(RED);
+	else if ( lvl == lDEBUG ) 
+        setColor(GREEN);
 	va_list argList;
 	va_start(argList, logline);
 	vsnprintf(logOut, 1024, logline, argList);

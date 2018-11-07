@@ -39,8 +39,10 @@ extern "C"
 	void Main_DoInit()
 	{
 		HMODULE hModule;
-		if (SUCCEEDED(GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCSTR)Main_DoInit, &hModule))) Main_UnprotectModule(hModule);
-		CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)Init, NULL, NULL, NULL);
+		if (SUCCEEDED(GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCSTR)Main_DoInit, &hModule))) 
+            Main_UnprotectModule(hModule);
+		
+        CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)Init, NULL, NULL, NULL);
 		memcpy(originalEP, &originalCode, sizeof(originalCode));
 		__asm jmp originalEP
 	}
@@ -67,8 +69,10 @@ extern "C"
 		switch(ul_reason_for_call) 
 		{
 			case DLL_PROCESS_ATTACH:
-				if(!WrapperSystem::Init(hModule)) return FALSE;
+				if(!WrapperSystem::Init(hModule)) 
+                    return FALSE;
 				break;
+
 			case DLL_PROCESS_DETACH:
 				WrapperSystem::Shutdown();
 				break;
@@ -81,7 +85,6 @@ extern "C"
 		*out_wrapper = WrapperSystem::AllocWrapper();
 		return WrapperSystem::DirectInput8Create(inst_handle, version, r_iid, (LPVOID *)(*out_wrapper)->GetDIPtr(), p_unk);
 	}
-
 }
 
 bool WrapperSystem::Init(HANDLE mod_hnd) 
@@ -126,26 +129,45 @@ void WrapperSystem::Shutdown()
 void WrapperSystem::InitHID(HWND & h_wnd) 
 {
 	RECT windowRect = { 0 };
-	if(hidInitialized) return;
-	if(!h_wnd) h_wnd = GetForegroundWindow();
+	if(hidInitialized) 
+        return;
+
+	if(!h_wnd) 
+        h_wnd = GetForegroundWindow();
+
 	RAWINPUTDEVICE Rid;
 	Rid.usUsagePage = HID_USAGE_PAGE_GENERIC;
 	Rid.usUsage = HID_USAGE_GENERIC_MOUSE;
 	Rid.dwFlags = RIDEV_INPUTSINK;
 	Rid.hwndTarget = h_wnd;
-	if(!RegisterRawInputDevices(&Rid, 1, sizeof(RAWINPUTDEVICE))) return;
-	if(!(hookHandleGetMessage = SetWindowsHookExA(WH_GETMESSAGE, WindowHookFuncGetMessage, (HINSTANCE)wrapperModule, GetCurrentThreadId()))) return;
-	if(!(hookHandleCallWnd = SetWindowsHookExA(WH_CALLWNDPROC, WindowHookFuncCallWnd, (HINSTANCE)wrapperModule, GetCurrentThreadId()))) return;
+	if(!RegisterRawInputDevices(&Rid, 1, sizeof(RAWINPUTDEVICE))) 
+        return;
+
+	if(!(hookHandleGetMessage = SetWindowsHookExA(WH_GETMESSAGE, WindowHookFuncGetMessage, (HINSTANCE)wrapperModule, GetCurrentThreadId()))) 
+        return;
+
+	if(!(hookHandleCallWnd = SetWindowsHookExA(WH_CALLWNDPROC, WindowHookFuncCallWnd, (HINSTANCE)wrapperModule, GetCurrentThreadId()))) 
+        return;
+
 	hidInitialized = true;
 }
 
 LRESULT WrapperSystem::WindowHookFuncCallWnd(int nCode, WPARAM wParam, LPARAM lParam) 
 {
 	PCWPSTRUCT cwpData = (PCWPSTRUCT)lParam;
-	if(cwpData->message == WM_ACTIVATEAPP) for(WrapperList::iterator wrpItr = wrappers.begin(); wrpItr != wrappers.end(); wrpItr++) (*wrpItr)->SendAdjustExclusiveMode(cwpData->wParam ? false : true);
-	else if(cwpData->message == WM_SIZE) for(WrapperList::iterator wrpItr = wrappers.begin(); wrpItr != wrappers.end(); wrpItr++) (*wrpItr)->SendAdjustExclusiveMode(false);
-	else if(cwpData->message == WM_ENTERSIZEMOVE || cwpData->message == WM_ENTERMENULOOP) for(WrapperList::iterator wrpItr = wrappers.begin(); wrpItr != wrappers.end(); wrpItr++) (*wrpItr)->SendAdjustExclusiveMode(true);
-	if(nCode < 0) return CallNextHookEx(0, nCode, wParam, lParam);
+	if(cwpData->message == WM_ACTIVATEAPP) 
+        for(WrapperList::iterator wrpItr = wrappers.begin(); wrpItr != wrappers.end(); wrpItr++) 
+            (*wrpItr)->SendAdjustExclusiveMode(cwpData->wParam ? false : true);
+	else if(cwpData->message == WM_SIZE) 
+        for(WrapperList::iterator wrpItr = wrappers.begin(); wrpItr != wrappers.end(); wrpItr++) 
+            (*wrpItr)->SendAdjustExclusiveMode(false);
+	else if(cwpData->message == WM_ENTERSIZEMOVE || cwpData->message == WM_ENTERMENULOOP) 
+        for(WrapperList::iterator wrpItr = wrappers.begin(); wrpItr != wrappers.end(); wrpItr++) 
+            (*wrpItr)->SendAdjustExclusiveMode(true);
+
+	if(nCode < 0) 
+        return CallNextHookEx(0, nCode, wParam, lParam);
+
 	return TRUE;
 }
 
@@ -167,20 +189,48 @@ LRESULT WrapperSystem::WindowHookFuncGetMessage(int nCode, WPARAM wParam, LPARAM
 			lastEventTime = GetTickCount();
 			mouseEvent.SetTime(lastEventTime);
 			DI_HID_MouseEvent mouseEventWrap;
-			if(mouseEvent.Wrap(mouseEventWrap, type_axis_x)) PushEvent(mouseEventWrap);
-			if(mouseEvent.Wrap(mouseEventWrap, type_axis_y)) PushEvent(mouseEventWrap);
-			if(mouseEvent.Wrap(mouseEventWrap, type_axis_z)) PushEvent(mouseEventWrap);
-			if(mouseEvent.Wrap(mouseEventWrap, type_button_1)) PushEvent(mouseEventWrap);
-			if(mouseEvent.Wrap(mouseEventWrap, type_button_2)) PushEvent(mouseEventWrap);
-			if(mouseEvent.Wrap(mouseEventWrap, type_button_3)) PushEvent(mouseEventWrap);
-			if(mouseEvent.Wrap(mouseEventWrap, type_button_4)) PushEvent(mouseEventWrap);
-			if(mouseEvent.Wrap(mouseEventWrap, type_button_5)) PushEvent(mouseEventWrap);
-			if(mouseEvent.Wrap(mouseEventWrap, type_button_6)) { PushEvent(mouseEventWrap); PushEvent(button6ShutdownEvent); }
-			if(mouseEvent.Wrap(mouseEventWrap, type_button_7)) { PushEvent(mouseEventWrap); PushEvent(button7ShutdownEvent); }
+			if(mouseEvent.Wrap(mouseEventWrap, type_axis_x)) 
+                PushEvent(mouseEventWrap);
+
+			if(mouseEvent.Wrap(mouseEventWrap, type_axis_y)) 
+                PushEvent(mouseEventWrap);
+
+			if(mouseEvent.Wrap(mouseEventWrap, type_axis_z)) 
+                PushEvent(mouseEventWrap);
+
+			if(mouseEvent.Wrap(mouseEventWrap, type_button_1)) 
+                PushEvent(mouseEventWrap);
+
+			if(mouseEvent.Wrap(mouseEventWrap, type_button_2)) 
+                PushEvent(mouseEventWrap);
+
+			if(mouseEvent.Wrap(mouseEventWrap, type_button_3)) 
+                PushEvent(mouseEventWrap);
+
+			if(mouseEvent.Wrap(mouseEventWrap, type_button_4)) 
+                PushEvent(mouseEventWrap);
+
+			if(mouseEvent.Wrap(mouseEventWrap, type_button_5)) 
+                PushEvent(mouseEventWrap);
+
+			if(mouseEvent.Wrap(mouseEventWrap, type_button_6)) 
+            { 
+                PushEvent(mouseEventWrap); 
+                PushEvent(button6ShutdownEvent); 
+            }
+
+			if(mouseEvent.Wrap(mouseEventWrap, type_button_7)) 
+            { 
+                PushEvent(mouseEventWrap); 
+                PushEvent(button7ShutdownEvent); 
+            }
 			return TRUE;
 		}
 	}
-	if(nCode < 0) return CallNextHookEx(0, nCode, wParam, lParam);
+
+	if(nCode < 0) 
+        return CallNextHookEx(0, nCode, wParam, lParam);
+
 	return TRUE;
 }
 
@@ -333,7 +383,9 @@ DI_HID_WrapperBase::DI_HID_WrapperBase()
 
 DI_HID_WrapperBase::~DI_HID_WrapperBase() 
 {
-	for(DeviceList::iterator devItr = this->devices.begin(); devItr != this->devices.end(); devItr++) delete *devItr;
+	for(DeviceList::iterator devItr = this->devices.begin(); devItr != this->devices.end(); devItr++) 
+        delete *devItr;
+
 	this->diInterface->Release();
 }
 
@@ -353,7 +405,8 @@ DI_HID_DeviceBase * DI_HID_WrapperBase::AllocDevice()
 
 void DI_HID_WrapperBase::SendAdjustExclusiveMode(bool disable_capture)
 {
-	for(DeviceList::iterator devItr = this->devices.begin(); devItr != this->devices.end(); devItr++) (*devItr)->AdjustExclusiveMode(disable_capture);
+	for(DeviceList::iterator devItr = this->devices.begin(); devItr != this->devices.end(); devItr++) 
+        (*devItr)->AdjustExclusiveMode(disable_capture);
 }
 
 HRESULT DI_HID_WrapperBase::QueryInterface(const IID & r_iid, LPVOID * p_obj) 
@@ -384,7 +437,8 @@ HRESULT DI_HID_WrapperBase::EnumDevices(DWORD dev_type, LPDIENUMDEVICESCALLBACKA
 {
 	DeviceInstanceList devices;
 	diInterface->EnumDevices(dev_type, EnumDevicesCallback, &devices, flags);
-	for(DeviceInstanceList::iterator devItr = devices.begin(); devItr != devices.end(); devItr++) callback((LPCDIDEVICEINSTANCEA)&(*devItr), cb_userdata);
+	for(DeviceInstanceList::iterator devItr = devices.begin(); devItr != devices.end(); devItr++) 
+        callback((LPCDIDEVICEINSTANCEA)&(*devItr), cb_userdata);
 	return S_OK;
 }
 
@@ -442,7 +496,10 @@ DI_HID_DeviceBase::~DI_HID_DeviceBase()
 
 DI_HID_Object * DI_HID_DeviceBase::FindType(int obj_type) 
 {
-	for(ObjectList::iterator objItr = dataFormat.begin(); objItr != dataFormat.end(); objItr++) if(objItr->GetType() == obj_type) return &(*objItr);
+	for(ObjectList::iterator objItr = dataFormat.begin(); objItr != dataFormat.end(); objItr++) 
+        if(objItr->GetType() == obj_type) 
+            return &(*objItr);
+
 	return NULL;
 }
 
@@ -461,14 +518,14 @@ DI_HID_Object * DI_HID_DeviceBase::FetchEvent()
 	{
 		case type_axis_x:	objPtr->SetData(mouseEvent.lLastX);														break;
 		case type_axis_y:	objPtr->SetData(mouseEvent.lLastY);														break;
-		case type_axis_z:	objPtr->SetData((*(short *)&mouseEvent.usButtonData) > 0 ? 1 : -1);					break;
+		case type_axis_z:	objPtr->SetData((*(short *)&mouseEvent.usButtonData) > 0 ? 1 : -1);					    break;
 		case type_button_1:	objPtr->SetData((mouseEvent.usButtonFlags & RI_MOUSE_LEFT_BUTTON_DOWN) ? 0x80 : 0);		break;
 		case type_button_2:	objPtr->SetData((mouseEvent.usButtonFlags & RI_MOUSE_RIGHT_BUTTON_DOWN) ? 0x80 : 0);	break;
 		case type_button_3:	objPtr->SetData((mouseEvent.usButtonFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN) ? 0x80 : 0);	break;
 		case type_button_4:	objPtr->SetData((mouseEvent.usButtonFlags & RI_MOUSE_BUTTON_4_DOWN) ? 0x80 : 0);		break;
 		case type_button_5:	objPtr->SetData((mouseEvent.usButtonFlags & RI_MOUSE_BUTTON_5_DOWN) ? 0x80 : 0);		break;
-		case type_button_6:	objPtr->SetData(mouseEvent.usButtonData ? 0x80 : 0);										break;
-		case type_button_7:	objPtr->SetData(mouseEvent.usButtonData ? 0x80 : 0);										break;
+		case type_button_6:	objPtr->SetData(mouseEvent.usButtonData ? 0x80 : 0);									break;
+		case type_button_7:	objPtr->SetData(mouseEvent.usButtonData ? 0x80 : 0);									break;
 	}
 	objPtr->SetTime(mouseEvent.GetTime() - initTime);
 	return objPtr;
@@ -476,7 +533,10 @@ DI_HID_Object * DI_HID_DeviceBase::FetchEvent()
 
 bool DI_HID_DeviceBase::AlreadyInFormatList(const DI_HID_Object & obj) 
 {
-	for(ObjectList::iterator objItr = dataFormat.begin(); objItr != dataFormat.end(); objItr++) if(obj.GetType() == objItr->GetType()) return true;
+	for(ObjectList::iterator objItr = dataFormat.begin(); objItr != dataFormat.end(); objItr++) 
+        if(obj.GetType() == objItr->GetType()) 
+            return true;
+
 	return false;
 }
 
@@ -538,12 +598,13 @@ HRESULT DI_HID_DeviceBase::GetCapabilities(LPDIDEVCAPS dev_caps)
 
 HRESULT DI_HID_DeviceBase::EnumObjects(LPDIENUMDEVICEOBJECTSCALLBACKA callback, LPVOID cb_userdata, DWORD flags) 
 {
-	for(ObjectList::iterator objItr = objects.begin(); objItr != objects.end(); objItr++) callback((LPDIDEVICEOBJECTINSTANCEA)&(*objItr), cb_userdata);
+	for(ObjectList::iterator objItr = objects.begin(); objItr != objects.end(); objItr++) 
+        callback((LPDIDEVICEOBJECTINSTANCEA)&(*objItr), cb_userdata);
 	return S_OK;
 }
 
-HRESULT DI_HID_DeviceBase::GetProperty(const IID & r_iid, LPDIPROPHEADER dip) {
-
+HRESULT DI_HID_DeviceBase::GetProperty(const IID & r_iid, LPDIPROPHEADER dip) 
+{
 	switch((int)&r_iid) 
 	{
 		case 1: 
@@ -572,16 +633,22 @@ HRESULT DI_HID_DeviceBase::SetProperty(const IID & r_iid, LPCDIPROPHEADER dip)
 
 HRESULT DI_HID_DeviceBase::Acquire() 
 {
-	if(this->isAcquired) return S_FALSE;
+	if(this->isAcquired) 
+        return S_FALSE;
+
 	AdjustExclusiveMode(false);
-	if(this->foregroundMode && this->captureDisabled) return DIERR_INPUTLOST;
+	if(this->foregroundMode && this->captureDisabled) 
+        return DIERR_INPUTLOST;
+
 	this->isAcquired = true;
 	return S_OK;
 }
 
 HRESULT DI_HID_DeviceBase::Unacquire() 
 {
-	if(!this->isAcquired) return DI_NOEFFECT;
+	if(!this->isAcquired) 
+        return DI_NOEFFECT;
+
 	AdjustExclusiveMode(true);
 	this->isAcquired = false;
 	return S_OK;
@@ -592,9 +659,13 @@ HRESULT DI_HID_DeviceBase::GetDeviceState(DWORD buf_size, LPVOID buf_data)
 	if(!this->isAcquired) return DIERR_NOTACQUIRED;
 	for(ObjectList::iterator objItr = dataFormat.begin(); objItr != dataFormat.end(); objItr++) 
 	{
-		if((objItr->dwOfs + objItr->GetSize()) > buf_size) return DIERR_INVALIDPARAM;
-		if(objItr->GetSize() == 1) ((unsigned char *)buf_data)[objItr->dwOfs] = (unsigned char)WrapperSystem::ImmediateBuffer(objItr->GetType());
-		else if(objItr->GetSize() == 4) ((LONG *)buf_data)[objItr->dwOfs >> 2] = WrapperSystem::ImmediateBuffer(objItr->GetType());
+		if((objItr->dwOfs + objItr->GetSize()) > buf_size) 
+            return DIERR_INVALIDPARAM;
+
+		if(objItr->GetSize() == 1) 
+            ((unsigned char *)buf_data)[objItr->dwOfs] = (unsigned char)WrapperSystem::ImmediateBuffer(objItr->GetType());
+		else if(objItr->GetSize() == 4) 
+            ((LONG *)buf_data)[objItr->dwOfs >> 2] = WrapperSystem::ImmediateBuffer(objItr->GetType());
 	}
 
 	if(!this->absoluteAxis) 
@@ -610,16 +681,26 @@ HRESULT DI_HID_DeviceBase::GetDeviceData(DWORD buf_size, LPDIDEVICEOBJECTDATA bu
 {
 	DWORD outIndex;
 	DI_HID_Object * deviceEvent;
-	if(!WrapperSystem::GetBufferedMode()) { *out_size = 0; return DIERR_NOTBUFFERED; }
-	if(!this->isAcquired) return DIERR_NOTACQUIRED;
+	if(!WrapperSystem::GetBufferedMode()) 
+    { 
+        *out_size = 0; 
+        return DIERR_NOTBUFFERED; 
+    }
+
+	if(!this->isAcquired) 
+        return DIERR_NOTACQUIRED;
+
 	for(outIndex = 0; outIndex < *out_size; outIndex++, buf_data++) 
 	{
-		if(!(deviceEvent = FetchEvent())) break;
+		if(!(deviceEvent = FetchEvent())) 
+            break;
+
 		buf_data->dwData = deviceEvent->GetData();
 		buf_data->dwOfs = deviceEvent->dwOfs;
 		buf_data->dwTimeStamp = deviceEvent->GetTime();
 		buf_data->dwSequence = this->seqNumber++;
 	}
+
 	*out_size = outIndex;
 	return WrapperSystem::eventList.size() ? DI_BUFFEROVERFLOW : S_OK;
 }
@@ -633,21 +714,25 @@ HRESULT DI_HID_DeviceBase::SetDataFormat(LPCDIDATAFORMAT data_format)
 		bool found = false;
 		for(ObjectList::iterator objItr = objects.begin(); objItr != objects.end(); objItr++) 
 		{
-			if(AlreadyInFormatList(*objItr)) continue;
+			if(AlreadyInFormatList(*objItr)) 
+                continue;
+
 			if((data_format->rgodf[i].dwType & DIDFT_ANYINSTANCE) != DIDFT_ANYINSTANCE) 
 			{
 				if(data_format->rgodf[i].dwType == objItr->dwType) 
 				{
-
 					AddToFormatList(*objItr, data_format->rgodf[i]);
 					found = true;
 					break;
 				}
 			}
 		}
+
 		for(ObjectList::iterator objItr = objects.begin(); !found && objItr != objects.end(); objItr++) 
 		{
-			if(AlreadyInFormatList(*objItr)) continue;
+			if(AlreadyInFormatList(*objItr)) 
+                continue;
+
 			if(data_format->rgodf[i].pguid) 
 			{
 				if((*data_format->rgodf[i].pguid == objItr->guidType)) 
@@ -657,19 +742,19 @@ HRESULT DI_HID_DeviceBase::SetDataFormat(LPCDIDATAFORMAT data_format)
 					break;
 				}
 			}
-
 		}
+
 		for(ObjectList::iterator objItr = objects.begin(); !found && objItr != objects.end(); objItr++) 
 		{
-			if(AlreadyInFormatList(*objItr)) continue;
+			if(AlreadyInFormatList(*objItr)) 
+                continue;
+
 			if((data_format->rgodf[i].dwType & DIDFT_ANYINSTANCE) == DIDFT_ANYINSTANCE) 
-			{
 				if(DIDFT_GETTYPE(data_format->rgodf[i].dwType) == DIDFT_GETTYPE(objItr->dwType)) 
 				{
 					AddToFormatList(*objItr, data_format->rgodf[i]);
 					break;
 				}
-			}
 		}
 	}
 	this->seqNumber = 0;
@@ -747,7 +832,9 @@ HRESULT DI_HID_DeviceBase::Escape(LPDIEFFESCAPE esc)
 
 HRESULT DI_HID_DeviceBase::Poll() 
 {
-	if(!this->isAcquired) return DIERR_NOTACQUIRED;
+	if(!this->isAcquired) 
+        return DIERR_NOTACQUIRED;
+
 	return S_OK;
 }
 

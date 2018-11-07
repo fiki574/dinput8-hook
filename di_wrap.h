@@ -46,9 +46,7 @@ typedef HRESULT ( WINAPI * DIRECTINPUTCREATEAPROC )( HINSTANCE hinst, DWORD dwVe
 typedef HRESULT ( WINAPI * DIRECTINPUT8CREATEPROC )( HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter );
 
 typedef enum {
-
 	type_not_valid = -1,
-
 	type_axis_x,
 	type_axis_y,
 	type_axis_z,
@@ -59,7 +57,6 @@ typedef enum {
 	type_button_5,
 	type_button_6,
 	type_button_7,
-
 	type_list_size
 };
 
